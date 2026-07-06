@@ -3,17 +3,20 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 
+# Page config
 st.set_page_config(page_title="Olist Delivery Performance Dashboard", layout="wide")
 
+# Database connect
 conn = sqlite3.connect('olist.db', check_same_thread=False)
 
 st.title("📦 Olist E-Commerce: Delivery Performance & Customer Satisfaction")
 st.markdown("Analyzing how delivery delays impact customer satisfaction, seller performance, and regional risk.")
 
+# KPI Row
 col1, col2, col3, col4 = st.columns(4)
 
 kpi_query = """
-SELECT 
+SELECT
     COUNT(*) AS total_orders,
     ROUND(AVG(review_score), 2) AS avg_review
 FROM orders o
@@ -25,6 +28,7 @@ kpi = pd.read_sql_query(kpi_query, conn)
 col1.metric("Total Delivered Orders", f"{kpi['total_orders'][0]:,}")
 col2.metric("Avg Review Score", kpi['avg_review'][0])
 
+# Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Delay vs Satisfaction", "Seller Performance",
     "Regional Risk", "Category Risk", "Payment Methods"
@@ -52,6 +56,7 @@ with tab1:
     fig1 = px.bar(df1, x='delay_bucket', y='avg_review_score',
                   color='avg_review_score', color_continuous_scale='RdYlGn')
     st.plotly_chart(fig1, width='stretch')
+    st.info("📌 **Insight:** Late deliveries drop average review score from 4.29 (on-time) to 2.27 (7+ days late) — a ~47% decline. Delivery reliability is one of the strongest drivers of customer satisfaction.")
 
 with tab2:
     st.subheader("Top & Worst Performing Sellers")
@@ -81,6 +86,7 @@ with tab2:
     """
     df2 = pd.read_sql_query(q2, conn)
     st.dataframe(df2)
+    st.info("📌 **Insight:** On-time delivery rate varies significantly across sellers, even after filtering for a minimum of 10 orders to avoid statistical noise — indicating uneven fulfillment quality that could be addressed through seller performance monitoring.")
 
 with tab3:
     st.subheader("State-wise Delivery Risk")
@@ -107,6 +113,7 @@ with tab3:
     df3 = pd.read_sql_query(q3, conn)
     fig3 = px.bar(df3, x='customer_state', y='late_pct')
     st.plotly_chart(fig3, width='stretch')
+    st.info("📌 **Insight:** Delay rates are not uniform across states — the states shown above have the highest late-delivery percentages, suggesting localized logistics bottlenecks that may need targeted courier or warehousing solutions.")
 
 with tab4:
     st.subheader("Category-wise Delay Risk")
@@ -132,6 +139,7 @@ with tab4:
     df4 = pd.read_sql_query(q4, conn)
     fig4 = px.bar(df4, x='category', y='late_pct')
     st.plotly_chart(fig4, width='stretch')
+    st.info("📌 **Insight:** These product categories show the highest delay rates, which could inform adjusted delivery estimates or improved packaging and handling processes for higher-risk items.")
 
 with tab5:
     st.subheader("Payment Method Distribution")
@@ -147,3 +155,4 @@ with tab5:
     df5 = pd.read_sql_query(q5, conn)
     fig5 = px.pie(df5, names='payment_type', values='total_transactions')
     st.plotly_chart(fig5, width='stretch')
+    st.info("📌 **Insight:** Credit card is the dominant payment method among customers, reflecting typical e-commerce payment behavior in the Brazilian market and a preference for installment-based purchasing.")
