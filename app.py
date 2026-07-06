@@ -3,16 +3,13 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 
-# Page config
 st.set_page_config(page_title="Olist Delivery Performance Dashboard", layout="wide")
 
-# Database connect
 conn = sqlite3.connect('olist.db', check_same_thread=False)
 
 st.title("📦 Olist E-Commerce: Delivery Performance & Customer Satisfaction")
 st.markdown("Analyzing how delivery delays impact customer satisfaction, seller performance, and regional risk.")
 
-# KPI Row
 col1, col2, col3, col4 = st.columns(4)
 
 kpi_query = """
@@ -28,7 +25,6 @@ kpi = pd.read_sql_query(kpi_query, conn)
 col1.metric("Total Delivered Orders", f"{kpi['total_orders'][0]:,}")
 col2.metric("Avg Review Score", kpi['avg_review'][0])
 
-# Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Delay vs Satisfaction", "Seller Performance",
     "Regional Risk", "Category Risk", "Payment Methods"
